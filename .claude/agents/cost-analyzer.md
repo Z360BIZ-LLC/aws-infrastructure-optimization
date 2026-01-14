@@ -1,10 +1,7 @@
 ---
-description: AWS cost optimization specialist for analyzing spending and recommending savings
-tools:
-  - Bash
-  - Read
-  - Grep
-  - Glob
+name: cost-analyzer
+description: AWS cost optimization specialist. Use this agent when analyzing AWS spending, identifying cost savings, right-sizing resources, or generating cost reports.
+tools: Bash, Read, Grep, Glob
 model: sonnet
 ---
 

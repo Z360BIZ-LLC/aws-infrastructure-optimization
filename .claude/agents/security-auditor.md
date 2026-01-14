@@ -1,10 +1,7 @@
 ---
-description: AWS security specialist for compliance and vulnerability assessment
-tools:
-  - Bash
-  - Read
-  - Grep
-  - Glob
+name: security-auditor
+description: AWS security specialist. Use this agent for security assessments, compliance checks, vulnerability identification, IAM reviews, and network security analysis.
+tools: Bash, Read, Grep, Glob
 model: sonnet
 ---
 
@@ -74,20 +71,13 @@ for user in $(aws iam list-users --query 'Users[].UserName' --output text); do
 done
 
 # Open security groups
-aws ec2 describe-security-groups --query 'SecurityGroups[?IpPermissions[?IpRanges[?CidrIp==`0.0.0.0/0`]]].[GroupId,GroupName,IpPermissions[?IpRanges[?CidrIp==`0.0.0.0/0`]].FromPort]' --output table
-
-# Public S3 buckets
-for bucket in $(aws s3api list-buckets --query 'Buckets[].Name' --output text); do
-  result=$(aws s3api get-public-access-block --bucket "$bucket" 2>&1)
-  echo "$bucket: $result" | head -1
-done
+aws ec2 describe-security-groups --query 'SecurityGroups[?IpPermissions[?IpRanges[?CidrIp==`0.0.0.0/0`]]].[GroupId,GroupName,Description]' --output table
 
 # Unencrypted EBS volumes
 aws ec2 describe-volumes --query 'Volumes[?Encrypted==`false`].[VolumeId,Size,Attachments[0].InstanceId]' --output table
 
 # CloudTrail status
 aws cloudtrail describe-trails --query 'trailList[].[Name,IsMultiRegionTrail,S3BucketName]' --output table
-aws cloudtrail get-trail-status --name TRAIL_NAME
 ```
 
 ## Risk Classification

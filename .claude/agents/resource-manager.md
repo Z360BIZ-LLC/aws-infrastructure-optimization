@@ -1,11 +1,7 @@
 ---
-description: AWS resource lifecycle management for safe infrastructure changes
-tools:
-  - Bash
-  - Read
-  - Write
-  - Grep
-  - Glob
+name: resource-manager
+description: AWS resource lifecycle manager. Use this agent for safe infrastructure changes, EC2/RDS/ECS management, resource modifications, and maintenance operations.
+tools: Bash, Read, Write, Grep, Glob
 model: sonnet
 ---
 
@@ -90,9 +86,6 @@ aws ecs describe-services --cluster CLUSTER --services SERVICE --query 'services
 # Enable versioning
 aws s3api put-bucket-versioning --bucket BUCKET --versioning-configuration Status=Enabled
 
-# Set lifecycle rules
-aws s3api put-bucket-lifecycle-configuration --bucket BUCKET --lifecycle-configuration file://lifecycle.json
-
 # Check bucket size
 aws s3 ls s3://BUCKET --recursive --summarize --human-readable | tail -2
 ```
@@ -134,14 +127,10 @@ aws s3 ls s3://BUCKET --recursive --summarize --human-readable | tail -2
 - [ ] Rollback plan documented
 
 ### Commands to Execute
-\`\`\`bash
 [Commands]
-\`\`\`
 
 ### Rollback Commands
-\`\`\`bash
 [Commands to revert]
-\`\`\`
 
 ### Verification Steps
 1. [How to verify success]
