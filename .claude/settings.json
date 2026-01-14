@@ -1,0 +1,42 @@
+{
+  "env": {
+    "AWS_REGION": "us-east-1",
+    "AWS_DEFAULT_OUTPUT": "table"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'INPUT=$(cat); CMD=$(echo \"$INPUT\" | grep -oP \"command\\\":\\s*\\\"\\K[^\\\"]+\" 2>/dev/null || echo \"\"); if echo \"$CMD\" | grep -qE \"(terminate-instances|delete-db|delete-cluster|delete-function|rb\\s+s3://|--force)\"; then echo \"WARNING: Potentially destructive AWS command detected\" >&2; fi; exit 0'",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'INPUT=$(cat); CMD=$(echo \"$INPUT\" | grep -oP \"command\\\":\\s*\\\"\\K[^\\\"]+\" 2>/dev/null || echo \"\"); if echo \"$CMD\" | grep -qE \"^aws \"; then echo \"[$(date -Iseconds)] AWS: $CMD\" >> \"$HOME/.claude/aws-operations.log\" 2>/dev/null; fi; exit 0'",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(aws:*)",
+      "Read",
+      "Grep",
+      "Glob",
+      "Write:reports/*",
+      "Write:docs/*"
+    ]
+  }
+}

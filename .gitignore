@@ -1,0 +1,22 @@
+# Claude Code local settings (user-specific)
+.claude/settings.local.json
+
+# Reports (generated, may contain sensitive data)
+reports/*.md
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
