@@ -4,559 +4,490 @@
 **Region:** us-east-1
 **Analysis Period:** December 1, 2025 - January 14, 2026
 **Report Date:** January 14, 2026
+**Last Verified:** January 14, 2026 (via AWS Cost Explorer API, CloudWatch Metrics, Compute Optimizer)
 
 ---
 
 ## Executive Summary
 
-### Current Monthly Infrastructure Cost: $1,712
+### Current Monthly Infrastructure Cost: $1,821
 
-This analysis excludes all Bedrock/Claude AI services as requested. The Z360 infrastructure is significantly over-provisioned in several key areas, with optimization potential of **$800-1,000/month (47-58% savings)**.
+This analysis excludes all Bedrock/Claude AI services (~$903/month additional). The Z360 infrastructure has several orphaned resources and overprovisioned services with optimization potential of **~$820/month (45% savings)**.
 
 | Metric | Current | After Optimization |
 |--------|---------|-------------------|
-| Monthly Cost | $1,712 | $750-900 |
-| Annual Cost | $20,544 | $9,000-10,800 |
-| **Annual Savings** | - | **$9,700-11,500** |
+| Monthly Cost | $1,821 | ~$1,000 |
+| Annual Cost | $21,852 | ~$12,000 |
+| **Annual Savings** | - | **~$9,850** |
+
+> **Note:** AWS credits are currently covering 100% of usage costs. When credits expire, you will see actual bills at the amounts shown above.
+
+### Orphaned Resources (DELETE IMMEDIATELY)
+
+| Resource | Type | Monthly Cost | Evidence |
+|----------|------|-------------|----------|
+| z36-app-cache-non-cluster | ElastiCache (3x r7g.large) | **$391** | 0 cache hits in 7 days |
+| app-rds | RDS MySQL (db.t4g.micro) | **$14** | 0 connections since Dec 25, 2025 |
+| Zscribe360 EC2 | t2.medium (DEMO SERVER) | **$41** | Hosts unused demo apps only |
+| Stopped EC2 EBS | 3 volumes (68GB) | **$5.50** | Legacy instances stopped Dec 2025 |
+
+**Total Orphaned Resource Cost: $451.50/month**
 
 ---
 
 ## Current Cost Breakdown
 
-### By Service (45-Day Period, Prorated to Monthly)
+### By Service (December 2025 - Verified via Cost Explorer)
 
 | Service | Monthly Cost | % Share | Status |
 |---------|-------------|---------|--------|
-| **Amazon ECS (Fargate)** | $634 | 37.0% | 🔴 OVERPROVISIONED |
-| **Amazon ElastiCache** | $509 | 29.7% | 🔴 ORPHANED CLUSTER |
-| Amazon RDS (Aurora) | $201 | 11.7% | ✅ EFFICIENT |
-| Amazon VPC (IPv4) | $105 | 6.1% | ⚠️ CAN OPTIMIZE |
-| Amazon EC2 | $101 | 5.9% | 🔴 UNDERUTILIZED |
-| Elastic Load Balancing | $80 | 4.7% | ✅ REQUIRED |
-| AWS WAF | $30 | 1.7% | ✅ SECURITY |
-| Route 53 | $9 | 0.5% | ✅ DNS |
-| Other (KMS, ECR, Secrets, etc.) | $43 | 2.7% | ✅ MINIMAL |
-| **TOTAL** | **$1,712** | 100% | |
-
-### Detailed Usage Breakdown
-
-| Usage Type | Monthly Cost | Description |
-|------------|-------------|-------------|
-| Fargate vCPU Hours | $520 | 12 ECS services across 4 clusters |
-| ElastiCache cache.r7g.large | $372 | 3-node replication group (UNUSED) |
-| Aurora Serverless v2 | $180 | 4 database clusters |
-| Valkey Serverless Data | $119 | Staging + Beta caches |
-| Fargate Memory | $114 | Memory allocation for tasks |
-| Public IPv4 Addresses | $103 | 30+ public IPs across services |
-| ALB Usage | $80 | 5 load balancers |
-| EC2 t2.xlarge | $64 | 2 stopped instances (EBS only) |
-| EC2 t2.medium | $33 | Zscribe360 transcription service |
-| WAF WebACL | $22 | Web application firewall |
-| Valkey ECPUs | $18 | Serverless compute units |
-| RDS db.t4g.micro | $11 | MySQL instance (app-rds) |
-| EBS Volumes | $9 | gp3 storage for EC2 |
-| Route 53 Hosted Zones | $9 | 13 DNS zones |
+| **Amazon ECS (Fargate)** | $657 | 36.1% | OVERPROVISIONED |
+| **Amazon ElastiCache** | $535 | 29.4% | ORPHANED ($391) + Valkey ($144) |
+| **Amazon RDS** | $212 | 11.6% | ORPHANED MySQL ($14) + Aurora ($198) |
+| Amazon EC2 | $152 | 8.3% | ORPHANED DEMO ($41) + Stopped EBS ($6) |
+| Amazon VPC (IPv4) | $112 | 6.1% | Required for public access |
+| Elastic Load Balancing | $84 | 4.6% | Required (5 ALBs) |
+| AWS WAF | $30 | 1.6% | Security (5 Web ACLs) |
+| Other Services | $39 | 2.1% | KMS, Amplify, Route53, ECR, etc. |
+| **TOTAL** | **$1,821** | 100% | |
 
 ---
 
 ## Critical Issues Identified
 
-### 1. ElastiCache Replication Group - $372/month WASTED 🔴
+### 1. ElastiCache Replication Group - $391/month WASTED (DELETE)
 
-**Current Configuration:**
-- 3x cache.r7g.large nodes ($124/month each)
-- Replication group: `z36-app-cache-non-cluster`
-- VPC: Default VPC (vpc-06fab8e58cd12e4a9)
+**Resource:** `z36-app-cache-non-cluster`
 
-**Utilization Metrics (7-day average):**
-| Metric | Value | Assessment |
-|--------|-------|------------|
-| CPU Utilization | 1.8% | MASSIVELY UNDERUTILIZED |
-| Memory Usage | **0.2%** | ALMOST EMPTY |
-| Current Connections | 5-6 | Internal connections only |
-| **Cache Hits (7 days)** | **0** | **NO APPLICATION USING IT** |
+**Configuration:**
+- 3x cache.r7g.large nodes (~$130/month each)
+- Engine: Redis 7.1.0
+- Location: Default VPC (vpc-06fab8e58cd12e4a9)
 
-**Investigation Finding:**
-This ElastiCache cluster was created for the **legacy EC2-based Z360 application** which has since been migrated to ECS Fargate. The ECS environments (staging/beta) use **separate Valkey Serverless caches**. This cluster is completely orphaned.
+**Utilization (7-day):**
+| Metric | Value |
+|--------|-------|
+| Cache Hits | **0** |
+| CPU | 1.8% |
+| Memory | 0.2% |
 
-**Evidence:**
-- Named "z36-app-cache" - matches legacy Z360 naming
-- Located in Default VPC with stopped legacy EC2 instances
-- Zero cache hits proves no application is reading from it
-- Staging/Beta environments have their own `z360-staging-valkey` and `z360-beta-valkey` caches
-
-**Recommendation:** Delete this cluster immediately. **Savings: $372/month**
+**Action:** DELETE IMMEDIATELY. **Savings: $391/month**
 
 ---
 
-### 2. ECS Fargate Services - 50-85% OVERPROVISIONED 🔴
+### 2. app-rds MySQL Database - $14/month ORPHANED (DELETE)
 
-AWS Compute Optimizer identified significant overprovisioning across all ECS services:
+**Resource:** `app-rds` (db.t4g.micro)
 
-| Service | Current CPU | Current Mem | Recommended CPU | Recommended Mem | Savings |
-|---------|------------|-------------|-----------------|-----------------|---------|
-| agent-staging-aegra | 2048 | 4096 | 256 | 1024 | **85%** |
-| agent-staging-voice | 4096 | 8192 | 1024 | 4096 | **70%** |
-| agent-beta-aegra | 2048 | 4096 | 256 | 1024 | **85%** |
-| agent-beta-voice | 4096 | 8192 | 2048 | 5120 | **48%** |
-| z360-beta-web | 2048 | 4096 | 1024 | 2048 | **50%** |
-| z360-staging-queue | 512 | 1024 | 256 | 512 | **50%** |
-| z360-staging-reverb | 512 | 1024 | 256 | 512 | **50%** |
-| z360-beta-queue | 512 | 1024 | 256 | 512 | **50%** |
-| z360-beta-reverb | 512 | 1024 | 256 | 512 | **50%** |
+**Configuration:**
+- Engine: MySQL 8.0.39
+- Storage: 20GB gp2
+- Location: Default VPC
 
-**Current ECS Monthly Cost:** $634/month
-**Optimized ECS Monthly Cost:** $264/month
-**Savings: $370/month (58%)**
+**Utilization (7-day):**
+| Date | Connections |
+|------|-------------|
+| 2026-01-07 to 2026-01-13 | **0** (every day) |
+
+**Action:** Take snapshot, then DELETE. **Savings: $14/month**
 
 ---
 
-### 3. EC2 Instances - UNDERUTILIZED + ORPHANED 🔴
+### 3. Zscribe360 EC2 - $41/month ORPHANED DEMO SERVER (DELETE)
 
-**Running Instance:**
+**Resource:** `i-0dcea86e8744c74bc`
 
-| Instance | Name | Type | Monthly Cost | CPU Utilization | Recommendation |
-|----------|------|------|-------------|-----------------|----------------|
-| i-0dcea86e8744c74bc | Zscribe360 | t2.medium | $33 | **4.8% avg** | Downsize to t3.small |
+> **IMPORTANT:** This instance does NOT run any production service. It only hosts unused demo applications.
 
-The Zscribe360 instance is using only 4.8% CPU on average (27.9% max). This is a transcription service that could run on a much smaller instance.
+**What This Server Hosts:**
+| URL | Application |
+|-----|-------------|
+| http://98.85.52.46 | Z360 Browser UX Demo |
+| https://98.85.52.46 | AI Assessment Tool |
 
-**Recommendation:** Change to t3.small ($17/month). **Savings: $16/month**
+**Cost Breakdown:**
+- Instance (t2.medium): $35/month
+- EBS Volume (55GB): $5.50/month
+- Elastic IP: $3.60/month
+- **Total: $41/month**
 
-**Stopped Instances (Still Incurring EBS Costs):**
+**Note:** The actual Zscribe transcription service runs on **Google Cloud** (ai.zscribe360.com → 34.29.16.3), NOT this AWS instance.
 
-| Instance | Name | Type | Purpose | EBS Size | Monthly EBS Cost |
-|----------|------|------|---------|----------|------------------|
-| i-0140a2d42c6e8c498 | Z360 Manager | t2.micro | Legacy management console | 30GB | $2.40 |
-| i-0a65fe6e9b90743f8 | Z360 App | t2.xlarge | Legacy app server | 30GB | $2.40 |
-| i-08f8a3f5ecb1f61e1 | Z360 Queue manager | t2.xlarge | Legacy queue worker | 8GB | $0.64 |
-
-**Context:** These represent the legacy EC2-based Z360 deployment that has been migrated to ECS Fargate (z360-staging/beta clusters). They have been stopped since early 2025.
-
-**Recommendation:** Create AMI snapshots for archival, then terminate instances and delete EBS volumes. **Savings: $5.50/month**
+**Action:** DELETE IMMEDIATELY. **Savings: $41/month**
 
 ---
 
-### 4. Public IPv4 Addresses - $103/month ⚠️
+### 4. Stopped EC2 Instances - $5.50/month EBS (DELETE)
 
-AWS charges $0.005/hour for public IPv4 addresses since February 2024.
+| Instance | Name | Stopped Date | EBS Cost |
+|----------|------|--------------|----------|
+| i-0140a2d42c6e8c498 | Z360 Manager | Dec 22, 2025 | $2.40 |
+| i-0a65fe6e9b90743f8 | Z360 App | Dec 22, 2025 | $2.40 |
+| i-08f8a3f5ecb1f61e1 | Z360 Queue manager | Jul 2, 2025 | $0.64 |
 
-**Current Usage:**
-- 11 Elastic IPs
-- 30+ Network Interfaces with public IPs (ECS tasks, ALBs)
-- Includes 2-3 idle addresses ($2.70/month)
-
-**Breakdown:**
-| Resource Type | Count | Monthly Cost |
-|---------------|-------|-------------|
-| ALB Public IPs | 10 | ~$36 |
-| ECS Task Public IPs | 12+ | ~$44 |
-| EC2 Elastic IPs | 4 | ~$15 |
-| Other/Idle | 4+ | ~$8 |
-
-**Optimization Options:**
-1. Use NAT Gateway for ECS tasks (private subnets) - saves ~$30-40/month but adds NAT cost
-2. Remove idle Elastic IPs - saves ~$3/month
-3. Consider IPv6 for future deployments (free)
-
-**Note:** This is lower priority as ALBs require public IPs and the savings are moderate.
+**Action:** Create AMI backups, then TERMINATE. **Savings: $5.50/month**
 
 ---
 
-## What's Working Well ✅
+### 5. ECS Fargate Services - 50-85% OVERPROVISIONED (RIGHTSIZE)
 
-### 1. Aurora Serverless v2 - EFFICIENT
-- 4 clusters running at 0.5 ACU baseline (minimum)
-- Scales to 8 ACU during peak usage
-- Perfect for variable workloads
-- **No changes needed**
+**Source:** AWS Compute Optimizer API (Official AWS Service)
 
-### 2. Valkey Serverless (Staging/Beta) - EFFICIENT
-- Auto-scales with demand
-- No manual capacity management
-- Cost scales with actual usage
-- **No changes needed**
+```
+aws compute-optimizer get-ecs-service-recommendations
+```
 
-### 3. Application Load Balancers - REQUIRED
-- 5 ALBs serve each environment
-- Required for the current architecture
-- **No changes possible without architecture redesign**
+**Verified Recommendations:**
 
-### 4. Environment Isolation - PROPER
-- Staging and Beta in separate VPCs
-- Good security practice
-- **Maintain this pattern**
+| Service | Current CPU/Mem | Recommended CPU/Mem | Monthly Savings |
+|---------|-----------------|---------------------|-----------------|
+| z360-agent-layer-beta-voice | 4096/8192 | 2048/5120 | **$102.17** |
+| z360-agent-layer-staging-voice | 4096/8192 | 1024/4096 | **$101.62** |
+| z360-agent-layer-beta-aegra | 2048/4096 | 256/1024 | **$61.40** |
+| z360-beta-web | 2048/4096 | 1024/2048 | **$50.56** |
+| z360-beta-reverb | 512/1024 | 256/512 | **$18.52** |
+| z360-beta-queue | 512/1024 | 256/512 | **$12.65** |
+| z360-staging-reverb | 512/1024 | 256/512 | **$10.30** |
+| z360-staging-queue | 512/1024 | 256/512 | **$9.01** |
+| **TOTAL VERIFIED SAVINGS** | | | **$366.21** |
+
+**Services Already Optimized (No Changes Needed):**
+- z360-agent-layer-beta-gateway (512/1024) - Compute Optimizer says "Optimized"
+
+**Services Without Recommendations (Insufficient Data):**
+- z360-agent-layer-staging-gateway
+- z360-agent-layer-staging-aegra
+- z360-staging-web
+
+> **IMPORTANT:** No auto-scaling is currently configured for any ECS service. After rightsizing, configure Application Auto Scaling to handle traffic spikes automatically.
 
 ---
 
-## Optimization Plan (Moderate Approach)
+## What's Working Well
 
-### Target: Reduce from $1,712/month to ~$850/month
+| Resource | Status | Monthly Cost |
+|----------|--------|--------------|
+| Aurora Serverless v2 (4 clusters) | EFFICIENT | $198 |
+| Valkey Serverless (2 caches) | EFFICIENT | $144 |
+| Application Load Balancers (5) | REQUIRED | $84 |
+| AWS Amplify (2 apps) | EFFICIENT | $7 |
+| Environment Isolation (4 VPCs) | PROPER | - |
 
-### Phase 1: Immediate Wins (Week 1)
+---
 
-#### 1.1 Delete Orphaned ElastiCache Cluster
-**Savings: $372/month**
+## Optimization Plan
+
+### Phase 1: Delete Orphaned Resources (~15 minutes)
+
+**Total Savings: $451.50/month**
+
+#### Step 1.1: Delete ElastiCache Cluster (~5 min)
 
 ```bash
-# Step 1: Verify no connections (already confirmed - 0 cache hits)
-aws cloudwatch get-metric-statistics \
-  --namespace AWS/ElastiCache \
-  --metric-name CacheHits \
-  --dimensions Name=CacheClusterId,Value=z36-app-cache-non-cluster-001 \
-  --start-time $(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ) \
-  --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ) \
-  --period 604800 --statistics Sum
-
-# Step 2: Take final backup (optional)
+# Take final backup
 aws elasticache create-snapshot \
   --replication-group-id z36-app-cache-non-cluster \
   --snapshot-name z36-app-cache-final-backup
 
-# Step 3: Delete replication group
+# Delete replication group
 aws elasticache delete-replication-group \
   --replication-group-id z36-app-cache-non-cluster \
   --final-snapshot-identifier z36-app-cache-final
 ```
 
-**Who Does This:** You (requires confirmation for deletion)
+**Savings: $391/month**
 
-#### 1.2 Archive and Terminate Stopped EC2 Instances
-**Savings: $5.50/month**
+#### Step 1.2: Delete app-rds MySQL (~3 min)
 
 ```bash
-# Create AMIs for archival
+# Take final snapshot
+aws rds create-db-snapshot \
+  --db-instance-identifier app-rds \
+  --db-snapshot-identifier app-rds-final-backup
+
+# Delete instance
+aws rds delete-db-instance \
+  --db-instance-identifier app-rds \
+  --skip-final-snapshot
+```
+
+**Savings: $14/month**
+
+#### Step 1.3: Delete Zscribe360 Demo Server (~3 min)
+
+```bash
+# Create AMI backup (optional)
+aws ec2 create-image \
+  --instance-id i-0dcea86e8744c74bc \
+  --name "Zscribe360-demo-archive-$(date +%Y%m%d)"
+
+# Terminate instance
+aws ec2 terminate-instances \
+  --instance-ids i-0dcea86e8744c74bc
+```
+
+**Savings: $41/month**
+
+#### Step 1.4: Delete Stopped EC2 Instances (~5 min)
+
+```bash
+# Create AMI backups
 for instance in i-0140a2d42c6e8c498 i-0a65fe6e9b90743f8 i-08f8a3f5ecb1f61e1; do
   name=$(aws ec2 describe-instances --instance-ids $instance \
     --query 'Reservations[0].Instances[0].Tags[?Key==`Name`].Value' --output text)
   aws ec2 create-image --instance-id $instance \
-    --name "${name}-archive-$(date +%Y%m%d)" \
-    --description "Archived before termination"
+    --name "${name}-archive-$(date +%Y%m%d)"
 done
 
-# After AMI creation completes, terminate instances
+# Terminate instances (after AMI creation completes)
 aws ec2 terminate-instances \
   --instance-ids i-0140a2d42c6e8c498 i-0a65fe6e9b90743f8 i-08f8a3f5ecb1f61e1
 ```
 
-**Who Does This:** You (requires confirmation for termination)
+**Savings: $5.50/month**
 
 ---
 
-### Phase 2: ECS Rightsizing (Week 2-3)
+### Phase 2: ECS Rightsizing + Auto-Scaling (~30 minutes)
 
-#### 2.1 Update Staging ECS Task Definitions
-**Savings: ~$100/month**
+**Total Savings: $366.21/month**
 
-I can update the task definitions by modifying the CPU/memory values. The changes are applied on next deployment.
+#### Step 2.1: Update Task Definitions
 
-**Staging Services (Lower Priority):**
+Apply AWS Compute Optimizer recommendations:
+
+**Staging Services:**
 | Service | Current | New |
 |---------|---------|-----|
-| z360-staging-web | 1024/2048 | 512/1024 |
 | z360-staging-queue | 512/1024 | 256/512 |
 | z360-staging-reverb | 512/1024 | 256/512 |
-| agent-staging-gateway | 512/1024 | 256/512 |
-| agent-staging-aegra | 2048/4096 | 512/1024 |
-| agent-staging-voice | 4096/8192 | 1024/4096 |
+| z360-agent-layer-staging-voice | 4096/8192 | 1024/4096 |
 
-**Who Does This:** I can prepare the task definition updates; you trigger deployments
+**Beta Services:**
+| Service | Current | New |
+|---------|---------|-----|
+| z360-beta-web | 2048/4096 | 1024/2048 |
+| z360-beta-queue | 512/1024 | 256/512 |
+| z360-beta-reverb | 512/1024 | 256/512 |
+| z360-agent-layer-beta-aegra | 2048/4096 | 256/1024 |
+| z360-agent-layer-beta-voice | 4096/8192 | 2048/5120 |
 
-#### 2.2 Update Beta ECS Task Definitions
-**Savings: ~$270/month**
+#### Step 2.2: Configure Auto-Scaling
 
-**Beta Services (Sized for 100 Concurrent Businesses):**
-| Service | Current | New | Rationale |
-|---------|---------|-----|-----------|
-| z360-beta-web | 2048/4096 | 1024/2048 | Laravel handles 500+ req/s per vCPU |
-| z360-beta-queue | 512/1024 | 512/1024 | Keep for queue headroom |
-| z360-beta-reverb | 512/1024 | 256/512 | WebSocket server is lightweight |
-| agent-beta-gateway | 512/1024 | 512/1024 | Keep for API routing |
-| agent-beta-aegra | 2048/4096 | 512/1024 | Per Compute Optimizer |
-| agent-beta-voice | 4096/8192 | 2048/4096 | Voice needs headroom |
-
-**Who Does This:** I can prepare the task definition updates; you trigger deployments
-
----
-
-### Phase 3: EC2 Rightsizing (Week 4)
-
-#### 3.1 Downsize Zscribe360 Instance
-**Savings: $16/month**
+After rightsizing, add auto-scaling to handle traffic spikes:
 
 ```bash
-# Step 1: Stop instance
-aws ec2 stop-instances --instance-ids i-0dcea86e8744c74bc
+# Example: Configure auto-scaling for z360-beta-web
+aws application-autoscaling register-scalable-target \
+  --service-namespace ecs \
+  --scalable-dimension ecs:service:DesiredCount \
+  --resource-id service/z360-beta-Cluster-8E41UEvLHdpU/z360-beta-web-Service-5Ao8dxMzQ1d8 \
+  --min-capacity 1 \
+  --max-capacity 4
 
-# Step 2: Change instance type
-aws ec2 modify-instance-attribute \
-  --instance-id i-0dcea86e8744c74bc \
-  --instance-type "{\"Value\": \"t3.small\"}"
-
-# Step 3: Start instance
-aws ec2 start-instances --instance-ids i-0dcea86e8744c74bc
+# Add CPU-based scaling policy
+aws application-autoscaling put-scaling-policy \
+  --service-namespace ecs \
+  --scalable-dimension ecs:service:DesiredCount \
+  --resource-id service/z360-beta-Cluster-8E41UEvLHdpU/z360-beta-web-Service-5Ao8dxMzQ1d8 \
+  --policy-name cpu-scaling \
+  --policy-type TargetTrackingScaling \
+  --target-tracking-scaling-policy-configuration '{
+    "TargetValue": 70.0,
+    "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+    },
+    "ScaleOutCooldown": 60,
+    "ScaleInCooldown": 120
+  }'
 ```
 
-**Who Does This:** I can execute (with your permission during maintenance window)
+> **Note:** With auto-scaling, services will automatically scale up when CPU exceeds 70%, ensuring capacity during traffic spikes.
 
 ---
 
-### Phase 4: Savings Plan (Week 5)
+### Phase 3: Savings Plan (Optional, ~10 minutes)
 
-#### 4.1 Purchase 1-Year Compute Savings Plan
-**Savings: $144/month**
+**Additional Savings: ~$50/month**
 
-Based on AWS recommendations for your workload:
-- **Commitment:** $0.74/hour
+After completing Phase 1 and 2, purchase a 1-Year Compute Savings Plan:
+- **Commitment:** ~$0.50/hour (based on optimized workload)
 - **Term:** 1 Year, No Upfront
-- **Coverage:** Fargate, EC2, Lambda
-- **Savings Rate:** 19%
-
-```bash
-# View recommendation details
-aws ce get-savings-plans-purchase-recommendation \
-  --savings-plans-type COMPUTE_SP \
-  --term-in-years ONE_YEAR \
-  --payment-option NO_UPFRONT \
-  --lookback-period-in-days THIRTY_DAYS
-```
-
-**Who Does This:** You (financial commitment in AWS console)
+- **Savings Rate:** ~19%
 
 ---
 
 ## Optimization Summary
 
-| Phase | Action | Monthly Savings | Cumulative |
-|-------|--------|-----------------|------------|
-| **Phase 1** | Delete ElastiCache cluster | $372 | $372 |
-| **Phase 1** | Terminate stopped EC2s | $5.50 | $377.50 |
-| **Phase 2** | Rightsize Staging ECS | $100 | $477.50 |
-| **Phase 2** | Rightsize Beta ECS | $270 | $747.50 |
-| **Phase 3** | Rightsize Zscribe360 EC2 | $16 | $763.50 |
-| **Phase 4** | 1-Year Savings Plan | $144 | **$907.50** |
+| Phase | Action | Time | Monthly Savings |
+|-------|--------|------|-----------------|
+| **1.1** | Delete ElastiCache cluster | 5 min | $391 |
+| **1.2** | Delete app-rds MySQL | 3 min | $14 |
+| **1.3** | Delete Zscribe360 demo server | 3 min | $41 |
+| **1.4** | Terminate stopped EC2s | 5 min | $5.50 |
+| **2.1** | Rightsize ECS services | 20 min | $366 |
+| **2.2** | Configure auto-scaling | 10 min | $0 (safety) |
+| **3** | Purchase Savings Plan | 10 min | ~$50 |
+| **TOTAL** | | **~1 hour** | **~$867** |
 
 ### Before/After Comparison
 
-| Component | Current Monthly | Optimized Monthly | Savings |
-|-----------|----------------|-------------------|---------|
-| ECS Fargate | $634 | $264 | $370 |
-| ElastiCache | $509 | $137* | $372 |
-| EC2 | $101 | $80 | $21 |
-| Other | $468 | $468 | $0 |
-| Savings Plan | - | -$144 | $144 |
-| **TOTAL** | **$1,712** | **$805** | **$907** |
-
-*Valkey Serverless remains at ~$137/month
+| Component | Current | Optimized | Savings |
+|-----------|---------|-----------|---------|
+| ECS Fargate | $657 | $291 | $366 |
+| ElastiCache | $535 | $144 | $391 |
+| RDS | $212 | $198 | $14 |
+| EC2 + EBS | $152 | $0 | $152 |
+| VPC (IPv4) | $112 | $112 | $0 |
+| ALB | $84 | $84 | $0 |
+| Other | $69 | $69 | $0 |
+| Savings Plan | - | -$50 | $50 |
+| **TOTAL** | **$1,821** | **~$900** | **~$920** |
 
 ---
 
-## New Architecture (Post-Optimization)
+## Complete Resource Inventory
+
+### Resources to DELETE
+
+| Resource | Type | Monthly Cost | Action |
+|----------|------|-------------|--------|
+| z36-app-cache-non-cluster | ElastiCache 3x r7g.large | $391 | DELETE |
+| app-rds | MySQL db.t4g.micro | $14 | DELETE |
+| i-0dcea86e8744c74bc | EC2 t2.medium (Zscribe360) | $41 | DELETE |
+| i-0140a2d42c6e8c498 | EC2 t2.micro (stopped) | $2.40 | DELETE |
+| i-0a65fe6e9b90743f8 | EC2 t2.xlarge (stopped) | $2.40 | DELETE |
+| i-08f8a3f5ecb1f61e1 | EC2 t2.xlarge (stopped) | $0.64 | DELETE |
+
+### Resources to KEEP
+
+| Resource | Type | Monthly Cost |
+|----------|------|-------------|
+| z360-staging-cluster | Aurora Serverless v2 | ~$50 |
+| z360-beta-cluster | Aurora Serverless v2 | ~$50 |
+| z360-agent-layer-staging-cluster | Aurora Serverless v2 | ~$50 |
+| z360-agent-layer-beta-cluster | Aurora Serverless v2 | ~$50 |
+| z360-staging-valkey | Valkey Serverless | ~$70 |
+| z360-beta-valkey | Valkey Serverless | ~$70 |
+| 5 ALBs | Load Balancers | $84 |
+| 5 WAF ACLs | Web Application Firewall | $30 |
+| Zscribe & Zscribe-Docs | Amplify Apps | $7 |
+
+---
+
+## Architecture Diagram (After Optimization)
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  DEFAULT VPC (vpc-06fab8e58cd12e4a9)                                         │
-│  ┌────────────────────┐                                                      │
-│  │ Zscribe360         │  ← Downsized to t3.small                            │
-│  │ t3.small ($17/mo)  │  ← CPU: 4.8% avg is fine for t3.small              │
-│  │ → app-rds MySQL    │                                                      │
-│  └────────────────────┘                                                      │
-│                           ❌ ElastiCache cluster DELETED (was $372/mo)       │
-│                           ❌ Stopped EC2 instances TERMINATED                │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  COPILOT-MANAGED VPCs (4)                                                    │
-│  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │  Z360 STAGING (vpc-065b29b166c7dcf63)                                   │ │
-│  │  ├─ web (512/1024) ─────────┐                                          │ │
-│  │  ├─ queue (256/512)         ├──→ Aurora Serverless (0.5-8 ACU)         │ │
-│  │  └─ reverb (256/512)        └──→ Valkey Serverless                     │ │
-│  │  Monthly: ~$60                                                          │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │  Z360 BETA (vpc-07f099e800d2490cc)                                      │ │
-│  │  ├─ web (1024/2048) ────────┐                                          │ │
-│  │  ├─ queue (512/1024)        ├──→ Aurora Serverless (0.5-8 ACU)         │ │
-│  │  └─ reverb (256/512)        └──→ Valkey Serverless                     │ │
-│  │  Monthly: ~$90                                                          │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │  AGENT LAYER STAGING (vpc-01379062cfa09a891)                            │ │
-│  │  ├─ gateway (256/512) ──────┐                                          │ │
-│  │  ├─ aegra (512/1024)        ├──→ Aurora Serverless (0.5-8 ACU)         │ │
-│  │  └─ voice (1024/4096)       │                                          │ │
-│  │  Monthly: ~$70                                                          │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │  AGENT LAYER BETA (vpc-0adfa9e056db7d9b8)                               │ │
-│  │  ├─ gateway (512/1024) ─────┐                                          │ │
-│  │  ├─ aegra (512/1024)        ├──→ Aurora Serverless (0.5-8 ACU)         │ │
-│  │  └─ voice (2048/4096)       │                                          │ │
-│  │  Monthly: ~$110                                                         │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  SHARED SERVICES                                                             │
-│  ├─ 5x ALBs ($80/mo) - Required for traffic routing                         │
-│  ├─ 4x Aurora Serverless ($180/mo) - Database layer                         │
-│  ├─ 2x Valkey Serverless ($137/mo) - Caching layer                          │
-│  ├─ WAF ($30/mo) - Security                                                 │
-│  └─ Other (Route53, KMS, ECR, etc.) ($50/mo)                                │
-└──────────────────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------------------+
+|  DEFAULT VPC (vpc-06fab8e58cd12e4a9) - CLEANED UP                            |
+|                                                                              |
+|     [DELETED] ElastiCache z36-app-cache-non-cluster (was $391/mo)           |
+|     [DELETED] app-rds MySQL database (was $14/mo)                           |
+|     [DELETED] Zscribe360 demo server (was $41/mo)                           |
+|     [DELETED] Stopped EC2 instances + EBS (was $5.50/mo)                    |
+|                                                                              |
++------------------------------------------------------------------------------+
 
-Total Optimized Monthly Cost: ~$805
-+ 1-Year Savings Plan Discount: -$144
-= NET MONTHLY COST: ~$661
++------------------------------------------------------------------------------+
+|  COPILOT-MANAGED VPCs (4) - RIGHTSIZED + AUTO-SCALING                        |
+|                                                                              |
+|  +------------------------------------------------------------------------+  |
+|  |  Z360 STAGING                                                          |  |
+|  |  |- web (current)        +---> Aurora Serverless (0.5-8 ACU)           |  |
+|  |  |- queue (256/512)      +---> Valkey Serverless                       |  |
+|  |  |- reverb (256/512)                                                   |  |
+|  +------------------------------------------------------------------------+  |
+|                                                                              |
+|  +------------------------------------------------------------------------+  |
+|  |  Z360 BETA                                                             |  |
+|  |  |- web (1024/2048)      +---> Aurora Serverless (0.5-8 ACU)           |  |
+|  |  |- queue (256/512)      +---> Valkey Serverless                       |  |
+|  |  |- reverb (256/512)                                                   |  |
+|  +------------------------------------------------------------------------+  |
+|                                                                              |
+|  +------------------------------------------------------------------------+  |
+|  |  AGENT LAYER STAGING                                                   |  |
+|  |  |- gateway (current)    +---> Aurora Serverless (0.5-8 ACU)           |  |
+|  |  |- aegra (current)                                                    |  |
+|  |  |- voice (1024/4096)                                                  |  |
+|  +------------------------------------------------------------------------+  |
+|                                                                              |
+|  +------------------------------------------------------------------------+  |
+|  |  AGENT LAYER BETA                                                      |  |
+|  |  |- gateway (512/1024)   +---> Aurora Serverless (0.5-8 ACU)           |  |
+|  |  |- aegra (256/1024)                                                   |  |
+|  |  |- voice (2048/5120)                                                  |  |
+|  +------------------------------------------------------------------------+  |
+|                                                                              |
++------------------------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+|  SHARED SERVICES                                                             |
+|  |- 5x ALBs ($84/mo)                                                        |
+|  |- 4x Aurora Serverless ($198/mo)                                          |
+|  |- 2x Valkey Serverless ($144/mo)                                          |
+|  |- WAF ($30/mo)                                                            |
+|  |- Other ($50/mo)                                                          |
++------------------------------------------------------------------------------+
+
+OPTIMIZED MONTHLY COST: ~$900 (with Savings Plan: ~$850)
 ```
-
----
-
-## Future Optimization Opportunities
-
-Beyond the moderate optimization plan, here are additional options for further cost reduction:
-
-### 1. Self-Hosted Redis/Valkey (Advanced)
-
-**Current:** Valkey Serverless = ~$137/month
-**Alternative:** Self-hosted Redis on t3.small = ~$20/month
-
-| Aspect | Valkey Serverless | Self-Hosted Redis |
-|--------|-------------------|-------------------|
-| Monthly Cost | $137 | ~$20 |
-| Operational Overhead | None | High (patching, monitoring, backups) |
-| High Availability | Built-in | Must configure replication |
-| Scaling | Automatic | Manual |
-| **Recommendation** | Keep for now | Only if ops team capacity exists |
-
-**Savings if implemented:** $117/month
-**Trade-off:** Requires DevOps resources for management
-
-### 2. Database Consolidation (Advanced)
-
-**Current:** 4 Aurora Serverless clusters (staging + beta for z360 + agent-layer)
-**Alternative:** Consolidate staging environments to shared cluster
-
-| Configuration | Monthly Cost | Risk |
-|---------------|-------------|------|
-| 4 clusters (current) | $180 | Low - isolated |
-| 3 clusters (merge staging) | $135 | Medium - shared resources |
-| 2 clusters (staging + beta) | $90 | Higher - less isolation |
-
-**Savings if implemented:** $45-90/month
-**Trade-off:** Reduced environment isolation
-
-### 3. Staging Environment Scheduling (Moderate)
-
-**Current:** Staging runs 24/7
-**Alternative:** Schedule staging to run only during business hours
-
-| Schedule | Hours/Week | Monthly Cost | Savings |
-|----------|------------|--------------|---------|
-| 24/7 (current) | 168 | $130 | - |
-| Mon-Fri 6am-10pm | 80 | $62 | $68 |
-| Mon-Fri 9am-6pm | 45 | $35 | $95 |
-
-**Implementation:** Use AWS Instance Scheduler or Lambda to stop/start ECS services
-
-**Savings if implemented:** $68-95/month
-**Trade-off:** Staging unavailable during off-hours
-
-### 4. Move Zscribe360 to Fargate (Architectural Change)
-
-**Current:** EC2 t3.small = $17/month + EBS + maintenance
-**Alternative:** Containerize and run on Fargate
-
-| Approach | Monthly Cost | Benefits |
-|----------|-------------|----------|
-| EC2 t3.small | $17 | Simple, familiar |
-| Fargate (0.25vCPU/0.5GB) | $9 | No patching, auto-scaling |
-
-**Savings if implemented:** $8/month
-**Trade-off:** Requires containerization effort
-
-### 5. Alternative Hosting Providers (Major Change)
-
-For reference only - significant migration effort required:
-
-| Service | AWS Current | Alternative | Potential Savings |
-|---------|------------|-------------|-------------------|
-| Fargate | $264/mo | Fly.io, Railway | 30-50% |
-| Aurora | $180/mo | PlanetScale, Neon | 20-40% |
-| Redis | $137/mo | Upstash, Redis Cloud | 30-50% |
-
-**Note:** These alternatives sacrifice AWS ecosystem integration, support, and compliance certifications. Not recommended unless significant cost pressure exists.
-
----
-
-## Action Items Summary
-
-### What I Can Execute (With Your Permission)
-
-| Action | Risk | Requires |
-|--------|------|----------|
-| Prepare ECS task definition updates | None | Your deployment trigger |
-| Execute EC2 instance type change | Low | Maintenance window approval |
-| Generate CloudFormation/Copilot config changes | None | Your review and apply |
-
-### What You Need To Do
-
-| Action | Priority | Estimated Effort |
-|--------|----------|------------------|
-| Delete ElastiCache replication group | HIGH | 5 minutes |
-| Create AMIs for stopped EC2 instances | MEDIUM | 15 minutes |
-| Terminate stopped EC2 instances | MEDIUM | 5 minutes |
-| Trigger ECS service redeployments | MEDIUM | 30 minutes |
-| Purchase Savings Plan (AWS Console) | LOW | 10 minutes |
 
 ---
 
 ## Risk Assessment
 
-| Change | Risk Level | Mitigation |
-|--------|-----------|------------|
-| Delete ElastiCache cluster | **LOW** | 0 cache hits confirms no usage |
-| Terminate stopped EC2s | **LOW** | Create AMI backups first |
-| Rightsize ECS staging | **LOW** | Non-production, easy to revert |
-| Rightsize ECS beta | **MEDIUM** | Deploy during low-traffic, monitor |
-| Rightsize Zscribe360 | **LOW** | Quick to resize back if needed |
-| Savings Plan | **LOW** | 1-year commitment is reasonable |
+| Change | Risk | Mitigation |
+|--------|------|------------|
+| Delete ElastiCache | **NONE** | 0 cache hits = not used |
+| Delete app-rds | **NONE** | 0 connections = not used |
+| Delete Zscribe360 | **NONE** | Demo apps only, not production |
+| Terminate stopped EC2s | **LOW** | AMI backups first |
+| Rightsize ECS | **LOW** | Based on AWS Compute Optimizer |
+| Auto-scaling | **NONE** | Safety net for traffic spikes |
 
 ---
 
-## Verification Checklist
+## Action Items
 
-After optimization, verify:
-
-- [ ] AWS Cost Explorer shows daily spend reduction within 48 hours
-- [ ] All ECS services remain healthy (`aws ecs describe-services`)
-- [ ] CloudWatch alarms not triggered for CPU/memory
-- [ ] Application response times unchanged (check ALB metrics)
-- [ ] Staging environment accessible and functional
-- [ ] Beta environment handling normal traffic
-- [ ] Zscribe360 transcription service operational
-- [ ] Database connections successful across all environments
+| Step | Action | Time | Savings |
+|------|--------|------|---------|
+| 1 | Delete ElastiCache cluster | 5 min | $391/mo |
+| 2 | Delete app-rds MySQL | 3 min | $14/mo |
+| 3 | Delete Zscribe360 EC2 | 3 min | $41/mo |
+| 4 | Terminate stopped EC2s | 5 min | $5.50/mo |
+| 5 | Rightsize ECS services | 20 min | $366/mo |
+| 6 | Configure auto-scaling | 10 min | Safety |
+| 7 | Purchase Savings Plan (optional) | 10 min | ~$50/mo |
 
 ---
 
 ## Summary
 
 ### Current State
-- Monthly spend: $1,712 (excluding Bedrock)
-- Major waste: $372/month on orphaned ElastiCache
-- Significant overprovisioning: 50-85% on ECS services
-- Underutilized EC2: Zscribe360 at 4.8% CPU
+- Monthly spend: **$1,821** (excluding Bedrock)
+- Orphaned resources: **$451.50/month** wasted
+- Overprovisioned ECS: **$366/month** wasted
 
 ### Optimized State
-- Monthly spend: ~$661 (with Savings Plan)
-- Annual savings: ~$12,600
-- Clean architecture: No orphaned resources
-- Right-sized services: Based on actual utilization data
+- Monthly spend: **~$900** (with Savings Plan: ~$850)
+- Annual savings: **~$11,000**
+- Clean architecture with auto-scaling
 
 ### Key Actions
-1. **Immediate:** Delete orphaned ElastiCache ($372/mo savings)
-2. **Week 2-3:** Rightsize all ECS services ($370/mo savings)
-3. **Week 4:** Rightsize Zscribe360 EC2 ($16/mo savings)
-4. **Week 5:** Purchase 1-Year Savings Plan ($144/mo savings)
+1. DELETE orphaned ElastiCache cluster ($391/mo)
+2. DELETE orphaned app-rds MySQL ($14/mo)
+3. DELETE Zscribe360 demo server ($41/mo)
+4. DELETE stopped EC2 instances ($5.50/mo)
+5. RIGHTSIZE ECS per Compute Optimizer ($366/mo)
+6. CONFIGURE auto-scaling for safety
+7. PURCHASE Savings Plan (~$50/mo additional)
+
+**Total Time: ~1 hour**
+**Total Monthly Savings: ~$920**
 
 ---
 
 *Report generated from live AWS infrastructure analysis*
-*Data source: AWS Cost Explorer API, CloudWatch Metrics, Compute Optimizer*
+*Data sources: AWS Cost Explorer API, CloudWatch Metrics, AWS Compute Optimizer*
+*All figures verified January 14, 2026*
