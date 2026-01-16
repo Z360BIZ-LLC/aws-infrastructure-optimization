@@ -1,0 +1,100 @@
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                    DescribeTaskDefinition                                                                    |
++-------------------------+------------------------------------------------------------------------------------------------------------------------------------+
+|  cpu                    |  4096                                                                                                                              |
+|  executionRoleArn       |  arn:aws:iam::108782097218:role/z360-agent-layer-staging-voice-ExecutionRole-ybTyOZCW8uUY                                          |
+|  family                 |  z360-agent-layer-staging-voice                                                                                                    |
+|  memory                 |  8192                                                                                                                              |
+|  networkMode            |  awsvpc                                                                                                                            |
+|  registeredAt           |  2026-01-16T05:59:48.589000-06:00                                                                                                  |
+|  registeredBy           |  arn:aws:sts::108782097218:assumed-role/z360-agent-layer-staging-CFNExecutionRole/AWSCloudFormation                                |
+|  revision               |  94                                                                                                                                |
+|  status                 |  ACTIVE                                                                                                                            |
+|  taskDefinitionArn      |  arn:aws:ecs:us-east-1:108782097218:task-definition/z360-agent-layer-staging-voice:94                                              |
+|  taskRoleArn            |  arn:aws:iam::108782097218:role/z360-agent-layer-staging-voice-TaskRole-CiHkyL4wQWrh                                               |
++-------------------------+------------------------------------------------------------------------------------------------------------------------------------+
+||                                                                       compatibilities                                                                      ||
+|+------------------------------------------------------------------------------------------------------------------------------------------------------------+|
+||  EC2                                                                                                                                                       ||
+||  MANAGED_INSTANCES                                                                                                                                         ||
+||  FARGATE                                                                                                                                                   ||
+|+------------------------------------------------------------------------------------------------------------------------------------------------------------+|
+||                                                                    containerDefinitions                                                                    ||
+|+-----------+------------------------------------------------------------------------------------------------------------------------------------------------+|
+||  cpu      |  0                                                                                                                                             ||
+||  essential|  True                                                                                                                                          ||
+||  image    |  108782097218.dkr.ecr.us-east-1.amazonaws.com/z360-agent-layer/voice@sha256:32842c842ec503bac03f8cbeb96555e40a81f24912b3d7d9bf9b0cb1795e79db   ||
+||  name     |  voice                                                                                                                                         ||
+|+-----------+------------------------------------------------------------------------------------------------------------------------------------------------+|
+|||                                                                        environment                                                                       |||
+||+-------------------------------------------------------------------------------+--------------------------------------------------------------------------+||
+|||                                     name                                      |                                  value                                   |||
+||+-------------------------------------------------------------------------------+--------------------------------------------------------------------------+||
+|||  COPILOT_APPLICATION_NAME                                                     |  z360-agent-layer                                                        |||
+|||  GOOGLE_CLOUD_PROJECT                                                         |  b2b-leads-414419                                                        |||
+|||  COPILOT_ENVIRONMENT_NAME                                                     |  staging                                                                 |||
+|||  GOOGLE_CLOUD_LOCATION                                                        |  us-central1                                                             |||
+|||  ENVIRONMENT                                                                  |  production                                                              |||
+|||  GOOGLE_GENAI_USE_VERTEXAI                                                    |  True                                                                    |||
+|||  LANGFUSE_HOST                                                                |  https://evals.zikrainfotech.com                                         |||
+|||  LANGCHAIN_PROJECT                                                            |  z360-voice-agent                                                        |||
+|||  COPILOT_SERVICE_DISCOVERY_ENDPOINT                                           |  staging.z360-agent-layer.local                                          |||
+|||  EMBEDDING_FALLBACK_TO_OPENAI                                                 |  true                                                                    |||
+|||  LANGCHAIN_TRACING                                                            |  true                                                                    |||
+|||  LANGCHAIN_TRACING_V2                                                         |  true                                                                    |||
+|||  BG_JOB_ISOLATED_LOOPS                                                        |  true                                                                    |||
+|||  COPILOT_SERVICE_NAME                                                         |  voice                                                                   |||
+|||  EMBEDDING_MODEL                                                              |  gemini-embedding-001                                                    |||
+|||  LOG_LEVEL                                                                    |  DEBUG                                                                   |||
+||+-------------------------------------------------------------------------------+--------------------------------------------------------------------------+||
+|||                                                                     logConfiguration                                                                     |||
+||+----------------------------------------------------------------------------------+-----------------------------------------------------------------------+||
+|||  logDriver                                                                       |  awslogs                                                              |||
+||+----------------------------------------------------------------------------------+-----------------------------------------------------------------------+||
+||||                                                                         options                                                                        ||||
+|||+-------------------------------------------------------+------------------------------------------------------------------------------------------------+|||
+||||  awslogs-group                                        |  /copilot/z360-agent-layer-staging-voice                                                       ||||
+||||  awslogs-region                                       |  us-east-1                                                                                     ||||
+||||  awslogs-stream-prefix                                |  copilot                                                                                       ||||
+|||+-------------------------------------------------------+------------------------------------------------------------------------------------------------+|||
+|||                                                                          secrets                                                                         |||
+||+----------------------------+-----------------------------------------------------------------------------------------------------------------------------+||
+|||            name            |                                                          valueFrom                                                          |||
+||+----------------------------+-----------------------------------------------------------------------------------------------------------------------------+||
+|||  AGENT_NAME                |  /copilot/z360-agent-layer/staging/secrets/AGENT_NAME                                                                       |||
+|||  BASETEN_API_KEY           |  /copilot/z360-agent-layer/staging/secrets/BASETEN_API_KEY                                                                  |||
+|||  COMPOSIO_API_KEY          |  /copilot/z360-agent-layer/staging/secrets/COMPOSIO_API_KEY                                                                 |||
+|||  DB_SECRET                 |  arn:aws:secretsmanager:us-east-1:108782097218:secret:agentdbAuroraSecret-vKrPq38THFdP-OHEF3U                               |||
+|||  DEEPGRAM_API_KEY          |  /copilot/z360-agent-layer/staging/secrets/DEEPGRAM_API_KEY                                                                 |||
+|||  GOOGLE_CREDS_JSON         |  /copilot/z360-agent-layer/staging/secrets/GOOGLE_CREDS_JSON                                                                |||
+|||  GROQ_API_KEY              |  /copilot/z360-agent-layer/staging/secrets/GROQ_API_KEY                                                                     |||
+|||  LANGFUSE_PUBLIC_KEY       |  /copilot/z360-agent-layer/staging/secrets/LANGFUSE_PUBLIC_KEY                                                              |||
+|||  LANGFUSE_SECRET_KEY       |  /copilot/z360-agent-layer/staging/secrets/LANGFUSE_SECRET_KEY                                                              |||
+|||  LANGGRAPH_API_KEY         |  /copilot/z360-agent-layer/staging/secrets/LANGGRAPH_API_KEY                                                                |||
+|||  LANGSMITH_API_KEY         |  /copilot/z360-agent-layer/staging/secrets/LANGSMITH_API_KEY                                                                |||
+|||  LIVEKIT_API_KEY           |  /copilot/z360-agent-layer/staging/secrets/LIVEKIT_API_KEY                                                                  |||
+|||  LIVEKIT_API_SECRET        |  /copilot/z360-agent-layer/staging/secrets/LIVEKIT_API_SECRET                                                               |||
+|||  LIVEKIT_URL               |  /copilot/z360-agent-layer/staging/secrets/LIVEKIT_URL                                                                      |||
+|||  OPEN_ROUTER_API           |  /copilot/z360-agent-layer/staging/secrets/OPEN_ROUTER_API                                                                  |||
+||+----------------------------+-----------------------------------------------------------------------------------------------------------------------------+||
+||                                                                     requiresAttributes                                                                     ||
+|+------------------------------------------------------------------------------------------------------------------------------------------------------------+|
+||                                                                            name                                                                            ||
+|+------------------------------------------------------------------------------------------------------------------------------------------------------------+|
+||  com.amazonaws.ecs.capability.logging-driver.awslogs                                                                                                       ||
+||  ecs.capability.execution-role-awslogs                                                                                                                     ||
+||  com.amazonaws.ecs.capability.ecr-auth                                                                                                                     ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.19                                                                                                       ||
+||  ecs.capability.secrets.asm.environment-variables                                                                                                          ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.17                                                                                                       ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.21                                                                                                       ||
+||  com.amazonaws.ecs.capability.task-iam-role                                                                                                                ||
+||  ecs.capability.execution-role-ecr-pull                                                                                                                    ||
+||  ecs.capability.secrets.ssm.environment-variables                                                                                                          ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.18                                                                                                       ||
+||  ecs.capability.task-eni                                                                                                                                   ||
+|+------------------------------------------------------------------------------------------------------------------------------------------------------------+|
+||                                                                   requiresCompatibilities                                                                  ||
+|+------------------------------------------------------------------------------------------------------------------------------------------------------------+|
+||  FARGATE                                                                                                                                                   ||
+|+------------------------------------------------------------------------------------------------------------------------------------------------------------+|

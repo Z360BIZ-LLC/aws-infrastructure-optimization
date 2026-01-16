@@ -1,0 +1,104 @@
+----------------------------------------------------------------------------------------------------------------------------------
+|                                                     DescribeTaskDefinition                                                     |
++---------------------+----------------------------------------------------------------------------------------------------------+
+|  cpu                |  2048                                                                                                    |
+|  executionRoleArn   |  arn:aws:iam::108782097218:role/z360-agent-layer-beta-aegra-ExecutionRole-efDQ8SiYmBKu                   |
+|  family             |  z360-agent-layer-beta-aegra                                                                             |
+|  memory             |  4096                                                                                                    |
+|  networkMode        |  awsvpc                                                                                                  |
+|  registeredAt       |  2026-01-16T06:22:04.590000-06:00                                                                        |
+|  registeredBy       |  arn:aws:sts::108782097218:assumed-role/z360-agent-layer-beta-CFNExecutionRole/AWSCloudFormation         |
+|  revision           |  17                                                                                                      |
+|  status             |  ACTIVE                                                                                                  |
+|  taskDefinitionArn  |  arn:aws:ecs:us-east-1:108782097218:task-definition/z360-agent-layer-beta-aegra:17                       |
+|  taskRoleArn        |  arn:aws:iam::108782097218:role/z360-agent-layer-beta-aegra-TaskRole-9G9GzXD4X9tt                        |
++---------------------+----------------------------------------------------------------------------------------------------------+
+||                                                        compatibilities                                                       ||
+|+------------------------------------------------------------------------------------------------------------------------------+|
+||  EC2                                                                                                                         ||
+||  MANAGED_INSTANCES                                                                                                           ||
+||  FARGATE                                                                                                                     ||
+|+------------------------------------------------------------------------------------------------------------------------------+|
+||                                                     containerDefinitions                                                     ||
+|+----------------+-------------------------------------------------------------------------------------------------------------+|
+||  cpu           |  0                                                                                                          ||
+||  essential     |  True                                                                                                       ||
+||  image         |  108782097218.dkr.ecr.us-east-1.amazonaws.com/z360-agent-layer/aegra:dedbb24                                ||
+||  name          |  aegra                                                                                                      ||
+|+----------------+-------------------------------------------------------------------------------------------------------------+|
+|||                                                         environment                                                        |||
+||+--------------------------------------------+-------------------------------------------------------------------------------+||
+|||                    name                    |                                     value                                     |||
+||+--------------------------------------------+-------------------------------------------------------------------------------+||
+|||  COPILOT_LB_DNS                            |  z360-a-Publi-zQsATBo5XNth-958538622.us-east-1.elb.amazonaws.com              |||
+|||  COPILOT_APPLICATION_NAME                  |  z360-agent-layer                                                             |||
+|||  PORT                                      |  8000                                                                         |||
+|||  GOOGLE_CLOUD_PROJECT                      |  b2b-leads-414419                                                             |||
+|||  GOOGLE_CLOUD_LOCATION                     |  us-central1                                                                  |||
+|||  ENVIRONMENT                               |  production                                                                   |||
+|||  COPILOT_ENVIRONMENT_NAME                  |  beta                                                                         |||
+|||  DAYTONA_API_URL                           |  https://app.daytona.io/api                                                   |||
+|||  DEBUG                                     |  true                                                                         |||
+|||  UV_CACHE_DIR                              |  /tmp/uv-cache                                                                |||
+|||  GOOGLE_GENAI_USE_VERTEXAI                 |  True                                                                         |||
+|||  LANGFUSE_HOST                             |  https://evals.zikrainfotech.com                                              |||
+|||  COPILOT_SERVICE_DISCOVERY_ENDPOINT        |  beta.z360-agent-layer.local                                                  |||
+|||  COMPOSIO_CACHE_DIR                        |  /tmp/composio-cache                                                          |||
+|||  EMBEDDING_FALLBACK_TO_OPENAI              |  true                                                                         |||
+|||  BG_JOB_ISOLATED_LOOPS                     |  true                                                                         |||
+|||  COPILOT_SERVICE_NAME                      |  aegra                                                                        |||
+|||  EMBEDDING_MODEL                           |  gemini-embedding-001                                                         |||
+|||  AUTH_TYPE                                 |  noop                                                                         |||
+||+--------------------------------------------+-------------------------------------------------------------------------------+||
+|||                                                      logConfiguration                                                      |||
+||+------------------------------------------------------------------+---------------------------------------------------------+||
+|||  logDriver                                                       |  awslogs                                                |||
+||+------------------------------------------------------------------+---------------------------------------------------------+||
+||||                                                          options                                                         ||||
+|||+----------------------------------------------+---------------------------------------------------------------------------+|||
+||||  awslogs-group                               |  /copilot/z360-agent-layer-beta-aegra                                     ||||
+||||  awslogs-region                              |  us-east-1                                                                ||||
+||||  awslogs-stream-prefix                       |  copilot                                                                  ||||
+|||+----------------------------------------------+---------------------------------------------------------------------------+|||
+|||                                                        portMappings                                                        |||
+||+-----------------------------------------------------------------------------+----------------------------------------------+||
+|||  containerPort                                                              |  8000                                        |||
+|||  hostPort                                                                   |  8000                                        |||
+|||  name                                                                       |  target                                      |||
+|||  protocol                                                                   |  tcp                                         |||
+||+-----------------------------------------------------------------------------+----------------------------------------------+||
+|||                                                           secrets                                                          |||
+||+--------------------------+-------------------------------------------------------------------------------------------------+||
+|||           name           |                                            valueFrom                                            |||
+||+--------------------------+-------------------------------------------------------------------------------------------------+||
+|||  COMPOSIO_API_KEY        |  /copilot/z360-agent-layer/beta/secrets/COMPOSIO_API_KEY                                        |||
+|||  DATABASE_URL            |  /copilot/z360-agent-layer/beta/secrets/DATABASE_URL                                            |||
+|||  DAYTONA_API_KEY         |  /copilot/z360-agent-layer/beta/secrets/DAYTONA_API_KEY                                         |||
+|||  DB_SECRET               |  arn:aws:secretsmanager:us-east-1:108782097218:secret:agentdbAuroraSecret-8ZlRQjKJ7RHM-whw0dC   |||
+|||  FIRECRAWL_API_KEY       |  /copilot/z360-agent-layer/beta/secrets/FIRECRAWL_API_KEY                                       |||
+|||  GOOGLE_CREDS_JSON       |  /copilot/z360-agent-layer/beta/secrets/GOOGLE_CREDS_JSON                                       |||
+|||  LANGFUSE_PUBLIC_KEY     |  /copilot/z360-agent-layer/beta/secrets/LANGFUSE_PUBLIC_KEY                                     |||
+|||  LANGFUSE_PUBLIC_KEY_ASKZ|  /copilot/z360-agent-layer/beta/secrets/LANGFUSE_PUBLIC_KEY_ASKZ                                |||
+|||  LANGFUSE_SECRET_KEY     |  /copilot/z360-agent-layer/beta/secrets/LANGFUSE_SECRET_KEY                                     |||
+|||  LANGFUSE_SECRET_KEY_ASKZ|  /copilot/z360-agent-layer/beta/secrets/LANGFUSE_SECRET_KEY_ASKZ                                |||
+||+--------------------------+-------------------------------------------------------------------------------------------------+||
+||                                                      requiresAttributes                                                      ||
+|+------------------------------------------------------------------------------------------------------------------------------+|
+||                                                             name                                                             ||
+|+------------------------------------------------------------------------------------------------------------------------------+|
+||  com.amazonaws.ecs.capability.logging-driver.awslogs                                                                         ||
+||  ecs.capability.execution-role-awslogs                                                                                       ||
+||  com.amazonaws.ecs.capability.ecr-auth                                                                                       ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.19                                                                         ||
+||  ecs.capability.secrets.asm.environment-variables                                                                            ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.17                                                                         ||
+||  com.amazonaws.ecs.capability.task-iam-role                                                                                  ||
+||  ecs.capability.execution-role-ecr-pull                                                                                      ||
+||  ecs.capability.secrets.ssm.environment-variables                                                                            ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.18                                                                         ||
+||  ecs.capability.task-eni                                                                                                     ||
+|+------------------------------------------------------------------------------------------------------------------------------+|
+||                                                    requiresCompatibilities                                                   ||
+|+------------------------------------------------------------------------------------------------------------------------------+|
+||  FARGATE                                                                                                                     ||
+|+------------------------------------------------------------------------------------------------------------------------------+|

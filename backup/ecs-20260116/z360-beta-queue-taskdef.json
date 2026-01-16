@@ -1,0 +1,179 @@
+------------------------------------------------------------------------------------------------------------------------------------------
+|                                                         DescribeTaskDefinition                                                         |
++-------------------------+--------------------------------------------------------------------------------------------------------------+
+|  cpu                    |  512                                                                                                         |
+|  executionRoleArn       |  arn:aws:iam::108782097218:role/z360-beta-queue-ExecutionRole-R6upMH120ZF2                                   |
+|  family                 |  z360-beta-queue                                                                                             |
+|  memory                 |  1024                                                                                                        |
+|  networkMode            |  awsvpc                                                                                                      |
+|  registeredAt           |  2026-01-16T06:44:14.085000-06:00                                                                            |
+|  registeredBy           |  arn:aws:sts::108782097218:assumed-role/z360-beta-CFNExecutionRole/AWSCloudFormation                         |
+|  revision               |  17                                                                                                          |
+|  status                 |  ACTIVE                                                                                                      |
+|  taskDefinitionArn      |  arn:aws:ecs:us-east-1:108782097218:task-definition/z360-beta-queue:17                                       |
+|  taskRoleArn            |  arn:aws:iam::108782097218:role/z360-beta-queue-TaskRole-ZEaIloEB3uWA                                        |
++-------------------------+--------------------------------------------------------------------------------------------------------------+
+||                                                            compatibilities                                                           ||
+|+--------------------------------------------------------------------------------------------------------------------------------------+|
+||  EC2                                                                                                                                 ||
+||  MANAGED_INSTANCES                                                                                                                   ||
+||  FARGATE                                                                                                                             ||
+|+--------------------------------------------------------------------------------------------------------------------------------------+|
+||                                                         containerDefinitions                                                         ||
+|+------------------------------------+-------------------------------------------------------------------------------------------------+|
+||  cpu                               |  0                                                                                              ||
+||  essential                         |  True                                                                                           ||
+||  image                             |  laravelphp/nightwatch-agent:v1                                                                 ||
+||  name                              |  nightwatch-agent                                                                               ||
+|+------------------------------------+-------------------------------------------------------------------------------------------------+|
+|||                                                             environment                                                            |||
+||+-----------------------------------------------+------------------------------------------------------------------------------------+||
+|||                     name                      |                                       value                                        |||
+||+-----------------------------------------------+------------------------------------------------------------------------------------+||
+|||  COPILOT_SERVICE_DISCOVERY_ENDPOINT           |  beta.z360.local                                                                   |||
+|||  COPILOT_APPLICATION_NAME                     |  z360                                                                              |||
+|||  COPILOT_SERVICE_NAME                         |  queue                                                                             |||
+|||  STORAGE_NAME_BUCKET_NAME                     |  z360-beta-addonsstack-n53yvqoutypc-storagebucket-endcnjjywzvq                     |||
+|||  COPILOT_ENVIRONMENT_NAME                     |  beta                                                                              |||
+||+-----------------------------------------------+------------------------------------------------------------------------------------+||
+|||                                                             healthCheck                                                            |||
+||+----------------------------------------------------------------------------------------------+-------------------------------------+||
+|||  interval                                                                                    |  30                                 |||
+|||  retries                                                                                     |  3                                  |||
+|||  startPeriod                                                                                 |  0                                  |||
+|||  timeout                                                                                     |  5                                  |||
+||+----------------------------------------------------------------------------------------------+-------------------------------------+||
+||||                                                              command                                                             ||||
+|||+----------------------------------------------------------------------------------------------------------------------------------+|||
+||||  CMD-SHELL                                                                                                                       ||||
+||||  php nightwatch-status                                                                                                           ||||
+|||+----------------------------------------------------------------------------------------------------------------------------------+|||
+|||                                                          logConfiguration                                                          |||
+||+-----------------------------------------------------------------------+------------------------------------------------------------+||
+|||  logDriver                                                            |  awslogs                                                   |||
+||+-----------------------------------------------------------------------+------------------------------------------------------------+||
+||||                                                              options                                                             ||||
+|||+------------------------------------------------------------+---------------------------------------------------------------------+|||
+||||  awslogs-group                                             |  /copilot/z360-beta-queue                                           ||||
+||||  awslogs-region                                            |  us-east-1                                                          ||||
+||||  awslogs-stream-prefix                                     |  copilot                                                            ||||
+|||+------------------------------------------------------------+---------------------------------------------------------------------+|||
+|||                                                               secrets                                                              |||
+||+-------------------------+----------------------------------------------------------------------------------------------------------+||
+|||  name                   |  NIGHTWATCH_TOKEN                                                                                        |||
+|||  valueFrom              |  /copilot/z360/beta/secrets/ENV_NIGHTWATCH_TOKEN                                                         |||
+||+-------------------------+----------------------------------------------------------------------------------------------------------+||
+||                                                         containerDefinitions                                                         ||
+|+--------------------+-----------------------------------------------------------------------------------------------------------------+|
+||  cpu               |  0                                                                                                              ||
+||  essential         |  True                                                                                                           ||
+||  image             |  108782097218.dkr.ecr.us-east-1.amazonaws.com/z360/queue:976d0903                                               ||
+||  name              |  queue                                                                                                          ||
+|+--------------------+-----------------------------------------------------------------------------------------------------------------+|
+|||                                                               command                                                              |||
+||+------------------------------------------------------------------------------------------------------------------------------------+||
+|||  php                                                                                                                               |||
+|||  artisan                                                                                                                           |||
+|||  queue:work                                                                                                                        |||
+|||  --no-interaction                                                                                                                  |||
+|||  --verbose                                                                                                                         |||
+||+------------------------------------------------------------------------------------------------------------------------------------+||
+|||                                                             environment                                                            |||
+||+------------------------------------------+-----------------------------------------------------------------------------------------+||
+|||                   name                   |                                          value                                          |||
+||+------------------------------------------+-----------------------------------------------------------------------------------------+||
+|||  AWS_ENDPOINT                            |                                                                                         |||
+|||  FORCE_HTTPS                             |  true                                                                                   |||
+|||  NIGHTWATCH_CAPTURE_REQUEST_PAYLOAD      |  false                                                                                  |||
+|||  APP_ENV                                 |  production                                                                             |||
+|||  REVERB_HOST                             |  reverb.beta.z360.local                                                                 |||
+|||  REVERB_APP_SECRET                       |  z360-beta-secret                                                                       |||
+|||  AWS_SECRET_ACCESS_KEY                   |                                                                                         |||
+|||  REVERB_PATH                             |  /reverb                                                                                |||
+|||  APP_NAME                                |  Z360                                                                                   |||
+|||  AWS_BUCKET                              |  z360-beta-addonsstack-n53yvqoutypc-storagebucket-endcnjjywzvq                          |||
+|||  AWS_PUBLIC_URL                          |  https://cdn.beta.z360.biz                                                              |||
+|||  AWS_USE_PATH_STYLE_ENDPOINT             |  false                                                                                  |||
+|||  VITE_REVERB_HOST                        |  beta.z360.biz                                                                          |||
+|||  REDIS_PORT                              |                                                                                         |||
+|||  AWS_ACCESS_KEY_ID                       |                                                                                         |||
+|||  COPILOT_SERVICE_NAME                    |  queue                                                                                  |||
+|||  APP_URL                                 |  https://beta.z360.biz                                                                  |||
+|||  LOG_LEVEL                               |  warning                                                                                |||
+|||  APP_DEBUG                               |  false                                                                                  |||
+|||  REDIS_HOST                              |                                                                                         |||
+|||  COPILOT_APPLICATION_NAME                |  z360                                                                                   |||
+|||  STORAGE_NAME_BUCKET_NAME                |  z360-beta-addonsstack-n53yvqoutypc-storagebucket-endcnjjywzvq                          |||
+|||  REVERB_APP_KEY                          |  z360-beta-key                                                                          |||
+|||  COPILOT_ENVIRONMENT_NAME                |  beta                                                                                   |||
+|||  AGENT_SIP_URL                           |  sip:+10000000001@3tdlxrqvb2u.sip.livekit.cloud                                         |||
+|||  LOG_STACK                               |  nightwatch                                                                             |||
+|||  COPILOT_SERVICE_DISCOVERY_ENDPOINT      |  beta.z360.local                                                                        |||
+|||  SESSION_SECURE_COOKIE                   |  true                                                                                   |||
+|||  REVERB_SERVER_PATH                      |  /reverb                                                                                |||
+|||  MAIL_FROM_ADDRESS                       |  no-reply@mailer.z360.biz                                                               |||
+|||  AGENT_GATEWAY_BASE_URL                  |  https://gateway.beta.z360-agent-layer.z360.biz/                                        |||
+|||  MAIL_MAILER                             |  ses                                                                                    |||
+|||  VITE_REVERB_PORT                        |  443                                                                                    |||
+|||  REVERB_APP_ID                           |  z360-beta                                                                              |||
+|||  REDIS_URL                               |  rediss://z360-beta-valkey-hbph82.serverless.use1.cache.amazonaws.com:6379/0            |||
+|||  VITE_WIDGET_BASE_URL                    |  https://beta.z360.biz                                                                  |||
+||+------------------------------------------+-----------------------------------------------------------------------------------------+||
+|||                                                          logConfiguration                                                          |||
+||+-----------------------------------------------------------------------+------------------------------------------------------------+||
+|||  logDriver                                                            |  awslogs                                                   |||
+||+-----------------------------------------------------------------------+------------------------------------------------------------+||
+||||                                                              options                                                             ||||
+|||+------------------------------------------------------------+---------------------------------------------------------------------+|||
+||||  awslogs-group                                             |  /copilot/z360-beta-queue                                           ||||
+||||  awslogs-region                                            |  us-east-1                                                          ||||
+||||  awslogs-stream-prefix                                     |  copilot                                                            ||||
+|||+------------------------------------------------------------+---------------------------------------------------------------------+|||
+|||                                                               secrets                                                              |||
+||+----------------------------------------+-------------------------------------------------------------------------------------------+||
+|||                  name                  |                                         valueFrom                                         |||
+||+----------------------------------------+-------------------------------------------------------------------------------------------+||
+|||  APP_KEY                               |  /copilot/z360/beta/secrets/ENV_APP_KEY                                                   |||
+|||  BILLING_MONTHLY_NUMBER_PRICE_ID       |  /copilot/z360/beta/secrets/ENV_BILLING_MONTHLY_NUMBER_PRICE_ID                           |||
+|||  BILLING_PAYG_AGENT_CHAT_TURN_PRICE_ID |  /copilot/z360/beta/secrets/ENV_BILLING_PAYG_AGENT_CHAT_TURN_PRICE_ID                     |||
+|||  BILLING_PAYG_AI_CALL_PRICE_ID         |  /copilot/z360/beta/secrets/ENV_BILLING_PAYG_AI_CALL_PRICE_ID                             |||
+|||  BILLING_PAYG_CALL_PRICE_ID            |  /copilot/z360/beta/secrets/ENV_BILLING_PAYG_CALL_PRICE_ID                                |||
+|||  BILLING_PAYG_SMS_PRICE_ID             |  /copilot/z360/beta/secrets/ENV_BILLING_PAYG_SMS_PRICE_ID                                 |||
+|||  BILLING_PRICE_ID                      |  /copilot/z360/beta/secrets/ENV_BILLING_PRICE_ID                                          |||
+|||  COMPOSIO_AUTH_IDS                     |  /copilot/z360/beta/secrets/ENV_COMPOSIO_AUTH_IDS                                         |||
+|||  DB_SECRET                             |  arn:aws:secretsmanager:us-east-1:108782097218:secret:dbAuroraSecret-AsqqBK1mrfkW-LWaFWl  |||
+|||  GMAIL_PUBSUB_TOPIC                    |  /copilot/z360/beta/secrets/ENV_GMAIL_PUBSUB_TOPIC                                        |||
+|||  GOOGLE_CLIENT_ID                      |  /copilot/z360/beta/secrets/ENV_GOOGLE_CLIENT_ID                                          |||
+|||  GOOGLE_CLIENT_SECRET                  |  /copilot/z360/beta/secrets/ENV_GOOGLE_CLIENT_SECRET                                      |||
+|||  NIGHTWATCH_TOKEN                      |  /copilot/z360/beta/secrets/ENV_NIGHTWATCH_TOKEN                                          |||
+|||  STRIPE_KEY                            |  /copilot/z360/beta/secrets/ENV_STRIPE_KEY                                                |||
+|||  STRIPE_SECRET                         |  /copilot/z360/beta/secrets/ENV_STRIPE_SECRET                                             |||
+|||  STRIPE_WEBHOOK_SECRET                 |  /copilot/z360/beta/secrets/ENV_STRIPE_WEBHOOK_SECRET                                     |||
+|||  TELNYX_API_KEY                        |  /copilot/z360/beta/secrets/ENV_TELNYX_API_KEY                                            |||
+|||  TELNYX_CALL_CONTROL_APP_ID            |  /copilot/z360/beta/secrets/ENV_TELNYX_CALL_CONTROL_APP_ID                                |||
+|||  TELNYX_CREDENTIAL_CONNECTION_ID       |  /copilot/z360/beta/secrets/ENV_TELNYX_CREDENTIAL_CONNECTION_ID                           |||
+|||  TELNYX_NOTIFICATIONS_PROFILE_ID       |  /copilot/z360/beta/secrets/ENV_TELNYX_NOTIFICATIONS_PROFILE_ID                           |||
+|||  TELNYX_OUTBOUND_VOICE_PROFILE_ID      |  /copilot/z360/beta/secrets/ENV_TELNYX_OUTBOUND_VOICE_PROFILE_ID                          |||
+||+----------------------------------------+-------------------------------------------------------------------------------------------+||
+||                                                          requiresAttributes                                                          ||
+|+--------------------------------------------------------------------------------------------------------------------------------------+|
+||                                                                 name                                                                 ||
+|+--------------------------------------------------------------------------------------------------------------------------------------+|
+||  ecs.capability.execution-role-awslogs                                                                                               ||
+||  com.amazonaws.ecs.capability.ecr-auth                                                                                               ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.17                                                                                 ||
+||  com.amazonaws.ecs.capability.task-iam-role                                                                                          ||
+||  ecs.capability.container-health-check                                                                                               ||
+||  ecs.capability.execution-role-ecr-pull                                                                                              ||
+||  ecs.capability.secrets.ssm.environment-variables                                                                                    ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.18                                                                                 ||
+||  ecs.capability.task-eni                                                                                                             ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.29                                                                                 ||
+||  com.amazonaws.ecs.capability.logging-driver.awslogs                                                                                 ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.19                                                                                 ||
+||  ecs.capability.secrets.asm.environment-variables                                                                                    ||
+|+--------------------------------------------------------------------------------------------------------------------------------------+|
+||                                                        requiresCompatibilities                                                       ||
+|+--------------------------------------------------------------------------------------------------------------------------------------+|
+||  FARGATE                                                                                                                             ||
+|+--------------------------------------------------------------------------------------------------------------------------------------+|

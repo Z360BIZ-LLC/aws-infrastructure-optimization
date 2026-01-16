@@ -1,0 +1,94 @@
+-----------------------------------------------------------------------------------------------------------------------------
+|                                                  DescribeTaskDefinition                                                   |
++-------------------+-------------------------------------------------------------------------------------------------------+
+|  cpu              |  512                                                                                                  |
+|  executionRoleArn |  arn:aws:iam::108782097218:role/z360-agent-layer-staging-gateway-ExecutionRole-peVDOm4DM0qR           |
+|  family           |  z360-agent-layer-staging-gateway                                                                     |
+|  memory           |  1024                                                                                                 |
+|  networkMode      |  awsvpc                                                                                               |
+|  registeredAt     |  2026-01-16T08:07:23.304000-06:00                                                                     |
+|  registeredBy     |  arn:aws:sts::108782097218:assumed-role/z360-agent-layer-staging-CFNExecutionRole/AWSCloudFormation   |
+|  revision         |  80                                                                                                   |
+|  status           |  ACTIVE                                                                                               |
+|  taskDefinitionArn|  arn:aws:ecs:us-east-1:108782097218:task-definition/z360-agent-layer-staging-gateway:80               |
+|  taskRoleArn      |  arn:aws:iam::108782097218:role/z360-agent-layer-staging-gateway-TaskRole-7Ot9ihUyDh4a                |
++-------------------+-------------------------------------------------------------------------------------------------------+
+||                                                     compatibilities                                                     ||
+|+-------------------------------------------------------------------------------------------------------------------------+|
+||  EC2                                                                                                                    ||
+||  FARGATE                                                                                                                ||
+||  MANAGED_INSTANCES                                                                                                      ||
+|+-------------------------------------------------------------------------------------------------------------------------+|
+||                                                  containerDefinitions                                                   ||
+|+---------------+---------------------------------------------------------------------------------------------------------+|
+||  cpu          |  0                                                                                                      ||
+||  essential    |  True                                                                                                   ||
+||  image        |  108782097218.dkr.ecr.us-east-1.amazonaws.com/z360-agent-layer/gateway:bb75f3c                          ||
+||  name         |  gateway                                                                                                ||
+|+---------------+---------------------------------------------------------------------------------------------------------+|
+|||                                                      environment                                                      |||
+||+-----------------------------------------+-----------------------------------------------------------------------------+||
+|||                  name                   |                                    value                                    |||
+||+-----------------------------------------+-----------------------------------------------------------------------------+||
+|||  COPILOT_SERVICE_DISCOVERY_ENDPOINT     |  staging.z360-agent-layer.local                                             |||
+|||  COPILOT_LB_DNS                         |  z360-a-Publi-71IFfgE12f4T-1444548936.us-east-1.elb.amazonaws.com           |||
+|||  COPILOT_APPLICATION_NAME               |  z360-agent-layer                                                           |||
+|||  GOOGLE_CLOUD_PROJECT                   |  b2b-leads-414419                                                           |||
+|||  ENVIRONMENT                            |  production                                                                 |||
+|||  EMBEDDING_FALLBACK_TO_OPENAI           |  true                                                                       |||
+|||  COPILOT_ENVIRONMENT_NAME               |  staging                                                                    |||
+|||  GOOGLE_CLOUD_LOCATION                  |  us-central1                                                                |||
+|||  COPILOT_SERVICE_NAME                   |  gateway                                                                    |||
+|||  LOG_LEVEL                              |  DEBUG                                                                      |||
+|||  EMBEDDING_MODEL                        |  gemini-embedding-001                                                       |||
+|||  GOOGLE_GENAI_USE_VERTEXAI              |  True                                                                       |||
+||+-----------------------------------------+-----------------------------------------------------------------------------+||
+|||                                                   logConfiguration                                                    |||
+||+----------------------------------------------------------------+------------------------------------------------------+||
+|||  logDriver                                                     |  awslogs                                             |||
+||+----------------------------------------------------------------+------------------------------------------------------+||
+||||                                                       options                                                       ||||
+|||+----------------------------------------+----------------------------------------------------------------------------+|||
+||||  awslogs-group                         |  /copilot/z360-agent-layer-staging-gateway                                 ||||
+||||  awslogs-region                        |  us-east-1                                                                 ||||
+||||  awslogs-stream-prefix                 |  copilot                                                                   ||||
+|||+----------------------------------------+----------------------------------------------------------------------------+|||
+|||                                                     portMappings                                                      |||
+||+--------------------------------------------------------------------------+--------------------------------------------+||
+|||  containerPort                                                           |  8081                                      |||
+|||  hostPort                                                                |  8081                                      |||
+|||  name                                                                    |  target                                    |||
+|||  protocol                                                                |  tcp                                       |||
+||+--------------------------------------------------------------------------+--------------------------------------------+||
+|||                                                        secrets                                                        |||
+||+--------------------+--------------------------------------------------------------------------------------------------+||
+|||        name        |                                            valueFrom                                             |||
+||+--------------------+--------------------------------------------------------------------------------------------------+||
+|||  COMPOSIO_API_KEY  |  /copilot/z360-agent-layer/staging/secrets/COMPOSIO_API_KEY                                      |||
+|||  DB_SECRET         |  arn:aws:secretsmanager:us-east-1:108782097218:secret:agentdbAuroraSecret-vKrPq38THFdP-OHEF3U    |||
+|||  DEEPGRAM_API_KEY  |  /copilot/z360-agent-layer/staging/secrets/DEEPGRAM_API_KEY                                      |||
+|||  FIRECRAWL_API_KEY |  /copilot/z360-agent-layer/staging/secrets/FIRECRAWL_API_KEY                                     |||
+|||  GOOGLE_CREDS_JSON |  /copilot/z360-agent-layer/staging/secrets/GOOGLE_CREDS_JSON                                     |||
+|||  LANGGRAPH_API_KEY |  /copilot/z360-agent-layer/staging/secrets/LANGGRAPH_API_KEY                                     |||
+|||  LANGGRAPH_URL     |  /copilot/z360-agent-layer/staging/secrets/LANGGRAPH_URL                                         |||
+||+--------------------+--------------------------------------------------------------------------------------------------+||
+||                                                   requiresAttributes                                                    ||
+|+-------------------------------------------------------------------------------------------------------------------------+|
+||                                                          name                                                           ||
+|+-------------------------------------------------------------------------------------------------------------------------+|
+||  com.amazonaws.ecs.capability.logging-driver.awslogs                                                                    ||
+||  ecs.capability.execution-role-awslogs                                                                                  ||
+||  com.amazonaws.ecs.capability.ecr-auth                                                                                  ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.19                                                                    ||
+||  ecs.capability.secrets.asm.environment-variables                                                                       ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.17                                                                    ||
+||  com.amazonaws.ecs.capability.task-iam-role                                                                             ||
+||  ecs.capability.execution-role-ecr-pull                                                                                 ||
+||  ecs.capability.secrets.ssm.environment-variables                                                                       ||
+||  com.amazonaws.ecs.capability.docker-remote-api.1.18                                                                    ||
+||  ecs.capability.task-eni                                                                                                ||
+|+-------------------------------------------------------------------------------------------------------------------------+|
+||                                                 requiresCompatibilities                                                 ||
+|+-------------------------------------------------------------------------------------------------------------------------+|
+||  FARGATE                                                                                                                ||
+|+-------------------------------------------------------------------------------------------------------------------------+|
